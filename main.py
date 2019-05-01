@@ -14,31 +14,23 @@ def main(argv, argc):
         print("Usage: python main.py <directory of files of cars>")
         exit(1)
 
-    file_IO(argv)
+    train_df, test_df = file_IO(argv)
     return 0
 
 # ------------------------------------------------------------------------------
 # read files
 def file_IO(argv):
     print("Performing file I/O...\n\n")
-    parse_train_annos_file("devkit/cars_train_annos.csv")
-    mat = scipy.io.loadmat('devkit/cars_train_annos.mat')
-    mat = {k:v for k, v in mat.items() if k[0] != '_'}
-    data = pd.DataFrame({k: pd.Series(v[0]) for k, v in mat.items()})
-    data.to_csv("devkit/cars_train_annos.csv")
+    train_df = parse_annos_file("devkit/cars_train_annos.csv", True)
+    test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
+    return train_df, test_df
 
-    #car_directory = (glob.glob(argv[1]+"/*.png"))
-    #  TODO
-    #1 read in photo files
-    #2 find the features for classifying cars
-    #  class: Make
-    #return car_directory
 
 # ------------------------------------------------------------------------------
-# returns dataFrame of the training photos
-def parse_train_annos_file(cars_train_annos):
+# returns dataFrame of (train/test) data
+def parse_annos_file(cars_annos, train):
     train_photo_info = []
-    with open(cars_train_annos) as csvfile:
+    with open(cars_annos) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         flag = 0
         for row in readCSV:
@@ -54,9 +46,21 @@ def parse_train_annos_file(cars_train_annos):
                 train_photo_info.append(loc)
             else:
                 flag = 1
-    df = pd.DataFrame(train_photo_info, columns = ['min_x', 'max_x', 'min_y', 'max_y', 'class', 'file'])
-    pdb.set_trace()
+    if train:
+        headers = ['min_x', 'max_x', 'min_y', 'max_y', 'class', 'file']
+    else:
+        headers = ['min_x', 'max_x', 'min_y', 'max_y', 'file']
+
+    df = pd.DataFrame(train_photo_info, columns = headers)
     return df
 
 if __name__ == "__main__":
     main(sys.argv, len(sys.argv))
+
+
+# convert from .mat to .csv
+#
+# mat = scipy.io.loadmat('devkit/cars_train_annos.mat')
+# mat = {k:v for k, v in mat.items() if k[0] != '_'}
+# data = pd.DataFrame({k: pd.Series(v[0]) for k, v in mat.items()})
+# data.to_csv("devkit/cars_train_annos.csv")
