@@ -7,7 +7,7 @@ import scipy.io
 import numpy as np
 import pandas as pd
 from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
+# from sklearn.preprocessing import StandardScaler
 
 def main(argv, argc):
     if argc != 1:
@@ -29,7 +29,7 @@ def file_IO(argv):
 # ------------------------------------------------------------------------------
 # returns dataFrame of (train/test) data
 def parse_annos_file(cars_annos, train):
-    train_photo_info = []
+    mult_photos_info = []
     with open(cars_annos) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         flag = 0
@@ -51,7 +51,7 @@ def parse_annos_file(cars_annos, train):
     else:
         headers = ['min_x', 'max_x', 'min_y', 'max_y', 'file']
 
-    df = pd.DataFrame(train_photo_info, columns = headers)
+    df = pd.DataFrame(mult_photos_info, columns = headers)
     return df
 
 if __name__ == "__main__":
