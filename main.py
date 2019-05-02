@@ -12,7 +12,6 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
-from keras.datasets import mnist
 from matplotlib import pyplot as plt
 # from sklearn.preprocessing import StandardScaler
 
@@ -27,10 +26,10 @@ def main(argv, argc):
     pdb.set_trace()
 
     # Reshape input data
-    # x_train, x_test = x_train.reshape(x_train.shape[0], 1, 28, 28), x_test.reshape(x_test.shape[0], 1, 28, 28)
-    #
-    # # print(x_train.shape)
-    # # pdb.set_trace()
+    x_train, x_test = x_train.reshape(x_train.shape[0], 100, 100, 3), x_test.reshape(x_test.shape[0], 1, 28, 28)
+
+    print(x_train.shape)
+    pdb.set_trace()
     #
     # # Convert data type and normalize values
     # x_train, x_test = x_train.astype('float32'), x_test.astype('float32')
@@ -70,23 +69,26 @@ def main(argv, argc):
 
 # def reshapeData():
 
-
+def rescale(img, width, height):
+    dimensions = (width, height)
+    return cv2.resize(img, dimensions, interpolation=cv2.INTER_AREA)
 
 # ------------------------------------------------------------------------------
 # read files
 def file_IO(argv):
     train_rate = float(argv[1])
     print("Performing file I/O...\n\n")
-    df = parse_annos_file("devkit/mock_cars_train_annos.csv", True)
-    x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
-    # test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
-#    df = df.sample(frac=1)
+    df = parse_annos_file("devkit/cars_train_annos.csv", True)
+    x_train, y_train, x_test, y_test = preprocessing_data(df, train_rate)
 
     # need to read the img files
     return x_train, y_train, x_test, y_test
 
 def preprocess_data(df, train_rate):
+    SCALE_WIDTH = 100
+    SCALE_HEIGHT = 100
     features = []
+    #    df = df.sample(frac=1)
     for index, row in df.iterrows():
         min_x, max_x = int(row["min_x"]), int(row['max_x'])
         min_y, max_y = int(row['min_y']), int(row['max_y'])
@@ -94,13 +96,13 @@ def preprocess_data(df, train_rate):
         img = cv2.imread("mock_cars_train/" + row['file'])
 
         crop_img = img[min_y:max_y, min_x:max_x]
+        crop_img = rescale(crop_img, SCALE_WIDTH, SCALE_HEIGHT)
         features.append(crop_img)
 
-        # pdb.set_trace()
-        # cv2.imshow("cropped", crop_img)
+        # crop_img = rescale(crop_img, SCALE_WIDTH, SCALE_HEIGHT)
+        # cv2.imshow("scaled", crop_img)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-
     features = np.asarray(features)
     num_train = int(df.shape[0]*train_rate)
     x_train, y_train = features[:num_train], df[:num_train][df.columns[-2]]
