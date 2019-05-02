@@ -26,52 +26,10 @@ def main(argv, argc):
     pdb.set_trace()
 
     # Reshape input data
-    x_train, x_test = x_train.reshape(x_train.shape[0], 100, 100, 3), x_test.reshape(x_test.shape[0], 1, 28, 28)
-
     print(x_train.shape)
     pdb.set_trace()
-    #
-    # # Convert data type and normalize values
-    # x_train, x_test = x_train.astype('float32'), x_test.astype('float32')
-    #
-    # x_train /= 255
-    # x_test /= 255
-    #
-    # # Preprocess class labels
-    # y_train, y_test = np_utils.to_categorical(y_train, 10), np_utils.to_categorical(y_test, 10)
-    #
-    # # Declare Sequential model
-    # model = Sequential()
-    #
-    # # CNN input layer
-    # model.add(Convolution2D(32, 3, 3), activation='relu', input_shape=(1, 28, 28))
-    #
-    # model.add(Convolution2D(32, 3, 3, activation='relu'))
-    # model.add(MaxPooling2D(pool_size=(2,2)))
-    # model.add(Dropout(0.25))
-    #
-    # # Fully connected Dense layers
-    # model.add(Flatten())
-    # model.add(Dense(128, activation='relu'))
-    # model.add(Dropout(0.5))
-    # model.add(Dense(10, activation='softmax'))
-    #
-    # # Compile model
-    # model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
-    #
-    # # Fit model on training data
-    # model.fit(x_train, y_train, batch_size=32, nb_epoch=10, verbose=1)
-    #
-    # score = model.evaluate(x_test, y_test, verbose=0)
-    #
-    #
+
     return 0
-
-# def reshapeData():
-
-def rescale(img, width, height):
-    dimensions = (width, height)
-    return cv2.resize(img, dimensions, interpolation=cv2.INTER_AREA)
 
 # ------------------------------------------------------------------------------
 # read files
@@ -84,9 +42,17 @@ def file_IO(argv):
     # need to read the img files
     return x_train, y_train, x_test, y_test
 
+# ------------------------------------------------------------------------------
+# rescale cropped images
+def rescale(img, width, height):
+    dimensions = (width, height)
+    return cv2.resize(img, dimensions, interpolation=cv2.INTER_AREA)
+
+# ------------------------------------------------------------------------------
+# preprocess input and output data
 def preprocess_data(df, train_rate):
-    SCALE_WIDTH = 100
-    SCALE_HEIGHT = 100
+    SCALE_WIDTH = 400
+    SCALE_HEIGHT = 400
     features = []
     #    df = df.sample(frac=1)
     for index, row in df.iterrows():
@@ -106,14 +72,18 @@ def preprocess_data(df, train_rate):
 
     features = np.asarray(features)
     num_train = int(df.shape[0]*train_rate)
-    x_train, y_train = features[:num_train], df[:num_train][df.columns[-2]]
-    x_test, y_test = features[num_train:], df[num_train:][df.columns[-2]]
+    x_train, y_train = features[:num_train], np.asarray(df[:num_train][df.columns[-2]]).astype("int")
+    x_test, y_test = features[num_train:], np.asarray(df[num_train:][df.columns[-2]]).astype("int")
 
-#    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    x_train = x_train.astype('float32')/255
+    x_test = x_test.astype('float32')/255
+
+    # x_train = x_train.reshape(x_train.shape[0], SCALE_WIDTH, SCALE_HEIGHT, 3)
+    # x_test = x_test.reshape(x_test.shape[0], SCALE_WIDTH, SCALE_HEIGHT, 3)
+    pdb.set_trace()
+    y_train = np_utils.to_categorical(y_train,196)
     pdb.set_trace()
 
-    x_train = x_train.reshape(x_train.shape[0], 3)
-    x_test = x_train.reshape(x_test.shape[0], 3)
 
     return x_train, y_train, x_test, y_test
 
@@ -148,6 +118,41 @@ def parse_annos_file(cars_annos, train):
 if __name__ == "__main__":
     main(sys.argv, len(sys.argv))
 
+# ------------------------------------------------------------------------------
+# Pseudocode
+    # # Convert data type and normalize values
+    # x_train, x_test = x_train.astype('float32'), x_test.astype('float32')
+    #
+    # x_train /= 255
+    # x_test /= 255
+    #
+    # # Preprocess class labels
+    # y_train, y_test = np_utils.to_categorical(y_train, 10), np_utils.to_categorical(y_test, 10)
+    #
+    # # Declare Sequential model
+    # model = Sequential()
+    #
+    # # CNN input layer
+    # model.add(Convolution2D(32, 3, 3), activation='relu', input_shape=(1, 28, 28))
+    #
+    # model.add(Convolution2D(32, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D(pool_size=(2,2)))
+    # model.add(Dropout(0.25))
+    #
+    # # Fully connected Dense layers
+    # model.add(Flatten())
+    # model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(10, activation='softmax'))
+    #
+    # # Compile model
+    # model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+    #
+    # # Fit model on training data
+    # model.fit(x_train, y_train, batch_size=32, nb_epoch=10, verbose=1)
+    #
+    # score = model.evaluate(x_test, y_test, verbose=0)
+# ------------------------------------------------------------------------------
 
 # convert from .mat to .csv
 #
