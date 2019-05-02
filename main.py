@@ -1,4 +1,5 @@
 import re
+import cv2
 import sys
 import pdb
 import csv
@@ -23,8 +24,9 @@ def file_IO(argv):
     print("Performing file I/O...\n\n")
     train_df = parse_annos_file("devkit/cars_train_annos.csv", True)
     test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
-    return train_df, test_df
 
+    # need to read the img files
+    return train_df, test_df
 
 # ------------------------------------------------------------------------------
 # returns dataFrame of (train/test) data
