@@ -78,8 +78,8 @@ def rescale(img, width, height):
 def file_IO(argv):
     train_rate = float(argv[1])
     print("Performing file I/O...\n\n")
-    df = parse_annos_file("devkit/cars_train_annos.csv", True)
-    x_train, y_train, x_test, y_test = preprocessing_data(df, train_rate)
+    df = parse_annos_file("devkit/mock_cars_train_annos.csv", True)
+    x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
     # need to read the img files
     return x_train, y_train, x_test, y_test
@@ -103,6 +103,7 @@ def preprocess_data(df, train_rate):
         # cv2.imshow("scaled", crop_img)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
+
     features = np.asarray(features)
     num_train = int(df.shape[0]*train_rate)
     x_train, y_train = features[:num_train], df[:num_train][df.columns[-2]]
