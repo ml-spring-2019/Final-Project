@@ -7,36 +7,112 @@ import random
 import scipy.io
 import numpy as np
 import pandas as pd
+import theano
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.datasets import mnist
-
+from matplotlib import pyplot as plt
 # from sklearn.preprocessing import StandardScaler
 
 def main(argv, argc):
-    if argc != 1:
-        print("Usage: python main.py <directory of files of cars>")
+    if argc != 2:
+        print("Usage: python main.py <train rate>")
         exit(1)
 
-    train_df, test_df = file_IO(argv)
+    x_train, y_train, x_test, y_test = file_IO(argv)
+
+    # once x_train, y_train, etc. are images, reshape should work
+    pdb.set_trace()
+
+    # Reshape input data
+    # x_train, x_test = x_train.reshape(x_train.shape[0], 1, 28, 28), x_test.reshape(x_test.shape[0], 1, 28, 28)
+    #
+    # # print(x_train.shape)
+    # # pdb.set_trace()
+    #
+    # # Convert data type and normalize values
+    # x_train, x_test = x_train.astype('float32'), x_test.astype('float32')
+    #
+    # x_train /= 255
+    # x_test /= 255
+    #
+    # # Preprocess class labels
+    # y_train, y_test = np_utils.to_categorical(y_train, 10), np_utils.to_categorical(y_test, 10)
+    #
+    # # Declare Sequential model
+    # model = Sequential()
+    #
+    # # CNN input layer
+    # model.add(Convolution2D(32, 3, 3), activation='relu', input_shape=(1, 28, 28))
+    #
+    # model.add(Convolution2D(32, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D(pool_size=(2,2)))
+    # model.add(Dropout(0.25))
+    #
+    # # Fully connected Dense layers
+    # model.add(Flatten())
+    # model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(10, activation='softmax'))
+    #
+    # # Compile model
+    # model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+    #
+    # # Fit model on training data
+    # model.fit(x_train, y_train, batch_size=32, nb_epoch=10, verbose=1)
+    #
+    # score = model.evaluate(x_test, y_test, verbose=0)
+    #
+    #
     return 0
+
+# def reshapeData():
+
+
 
 # ------------------------------------------------------------------------------
 # read files
 def file_IO(argv):
+    train_rate = float(argv[1])
     print("Performing file I/O...\n\n")
-    train_df = parse_annos_file("devkit/cars_train_annos.csv", True)
-    test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
-
-    # img = cv2.imread("feafea")
-    # crop_img = img[min_y:max_y, min_x:max_x]
-    # cs2.imshow("cropped", crop_img)
-    # cv2.waitKey(0)
+    df = parse_annos_file("devkit/mock_cars_train_annos.csv", True)
+    x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
+    # test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
+#    df = df.sample(frac=1)
 
     # need to read the img files
-    return train_df, test_df
+    return x_train, y_train, x_test, y_test
+
+def preprocess_data(df, train_rate):
+    features = []
+    for index, row in df.iterrows():
+        min_x, max_x = int(row["min_x"]), int(row['max_x'])
+        min_y, max_y = int(row['min_y']), int(row['max_y'])
+
+        img = cv2.imread("mock_cars_train/" + row['file'])
+
+        crop_img = img[min_y:max_y, min_x:max_x]
+        features.append(crop_img)
+
+        # pdb.set_trace()
+        # cv2.imshow("cropped", crop_img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+    features = np.asarray(features)
+    num_train = int(df.shape[0]*train_rate)
+    x_train, y_train = features[:num_train], df[:num_train][df.columns[-2]]
+    x_test, y_test = features[num_train:], df[num_train:][df.columns[-2]]
+
+#    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    pdb.set_trace()
+
+    x_train = x_train.reshape(x_train.shape[0], 3)
+    x_test = x_train.reshape(x_test.shape[0], 3)
+
+    return x_train, y_train, x_test, y_test
 
 # ------------------------------------------------------------------------------
 # returns dataFrame of (train/test) data
@@ -59,9 +135,9 @@ def parse_annos_file(cars_annos, train):
             else:
                 flag = 1
     if train:
-        headers = ['min_x', 'max_x', 'min_y', 'max_y', 'class', 'file']
+        headers = ['min_x', 'min_y', 'max_x', 'max_y', 'class', 'file']
     else:
-        headers = ['min_x', 'max_x', 'min_y', 'max_y', 'file']
+        headers = ['min_x', 'max_y', 'max_x', 'min_y', 'file']
 
     df = pd.DataFrame(mult_photos_info, columns = headers)
     return df
