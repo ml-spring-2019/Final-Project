@@ -7,7 +7,12 @@ import random
 import scipy.io
 import numpy as np
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from keras.utils import np_utils
+from keras.datasets import mnist
+
 # from sklearn.preprocessing import StandardScaler
 
 def main(argv, argc):
@@ -24,6 +29,11 @@ def file_IO(argv):
     print("Performing file I/O...\n\n")
     train_df = parse_annos_file("devkit/cars_train_annos.csv", True)
     test_df = parse_annos_file("devkit/cars_test_annos.csv", False)
+
+    # img = cv2.imread("feafea")
+    # crop_img = img[min_y:max_y, min_x:max_x]
+    # cs2.imshow("cropped", crop_img)
+    # cv2.waitKey(0)
 
     # need to read the img files
     return train_df, test_df
@@ -45,7 +55,7 @@ def parse_annos_file(cars_annos, train):
                     else:
                         loc[i] = loc[i].strip('[[')
                         loc[i] = loc[i].strip(']')
-                train_photo_info.append(loc)
+                mult_photos_info.append(loc)
             else:
                 flag = 1
     if train:
