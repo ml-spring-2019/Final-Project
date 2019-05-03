@@ -14,7 +14,6 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from matplotlib import pyplot as plt
-# from sklearn.preprocessing import StandardScaler
 
 def warn(*args, **kwargs):
     pass
@@ -86,7 +85,7 @@ def main(argv, argc):
 def define_model_architecture(x_train, y_train, x_test, y_test):
     global NUM_CLASSES
     model = Sequential()
-    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape = (SCALE_WIDTH, SCALE_HEIGHT, 3)))
+    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape = (SCALE_WIDTH, SCALE_HEIGHT, 1)))
     model.add(Convolution2D(32, (3, 3), activation = 'relu'))
     model.add(MaxPooling2D(pool_size = (2,2)))
     model.add(Dropout(0.25))
@@ -124,6 +123,7 @@ def file_IO(argv):
     EPOCH_SIZE = int(argv[3])
     print("Performing file I/O...\n\n")
     df = parse_annos_file(PHOTO_ANNOS, True)
+    df = df.sample(frac=1).reset_index(drop=True)
     df["class"] = update_y(df["class"])
     x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
@@ -227,46 +227,3 @@ def parse_annos_file(cars_annos, train):
 
 if __name__ == "__main__":
     main(sys.argv, len(sys.argv))
-
-# ------------------------------------------------------------------------------
-# Pseudocode
-    # # Convert data type and normalize values
-    # x_train, x_test = x_train.astype('float32'), x_test.astype('float32')
-    #
-    # x_train /= 255
-    # x_test /= 255
-    #
-    # # Preprocess class labels
-    # y_train, y_test = np_utils.to_categorical(y_train, 10), np_utils.to_categorical(y_test, 10)
-    #
-    # # Declare Sequential model
-    # model = Sequential()
-    #
-    # # CNN input layer
-    # model.add(Convolution2D(32, 3, 3), activation='relu', input_shape=(1, 28, 28))
-    #
-    # model.add(Convolution2D(32, 3, 3, activation='relu'))
-    # model.add(MaxPooling2D(pool_size=(2,2)))
-    # model.add(Dropout(0.25))
-    #
-    # # Fully connected Dense layers
-    # model.add(Flatten())
-    # model.add(Dense(128, activation='relu'))
-    # model.add(Dropout(0.5))
-    # model.add(Dense(10, activation='softmax'))
-    #
-    # # Compile model
-    # model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
-    #
-    # # Fit model on training data
-    # model.fit(x_train, y_train, batch_size=32, nb_epoch=10, verbose=1)
-    #
-    # score = model.evaluate(x_test, y_test, verbose=0)
-# ------------------------------------------------------------------------------
-
-# convert from .mat to .csv
-#
-# mat = scipy.io.loadmat('devkit/cars_train_annos.mat')
-# mat = {k:v for k, v in mat.items() if k[0] != '_'}
-# data = pd.DataFrame({k: pd.Series(v[0]) for k, v in mat.items()})
-# data.to_csv("devkit/cars_train_annos.csv")
