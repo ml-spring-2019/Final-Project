@@ -23,8 +23,8 @@ warnings.warn = warn
 PHOTO_DIRECTORY = "cars_train/"
 PHOTO_ANNOS = "devkit/cars_train_annos.csv"
 CAR_CLASSES_FILE = "devkit/cars_meta.csv"
-SCALE_WIDTH = 400
-SCALE_HEIGHT = 400
+SCALE_WIDTH = 100
+SCALE_HEIGHT = 100
 NUM_CLASSES = 0
 EPOCH_SIZE = 10
 CLASSES = []
@@ -89,6 +89,7 @@ def file_IO(argv):
     df = parse_annos_file(PHOTO_ANNOS, True)
     pdb.set_trace()
     df["class"] = update_y(df["class"])
+    pdb.set_trace()
     x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
     # need to read the img files
@@ -114,13 +115,15 @@ def find_classes():
                 flag = 1
     NUM_CLASSES = len(CLASSES)
 
+# ------------------------------------------------------------------------------
+# Reduce number of classes
 def update_y(class_column):
     global CLASSES
     class_itr = 0
     for i in range(class_column.shape[0]):
         for j in range(len(CLASSES)):
-            if int(class_column[i]) <= CLASSES[j]:
-                class_column[i] = str(j - 1)
+            if int(class_column[i]) <= CLASSES[j]+1:
+                class_column[i] = str(j)
                 break
     return class_column
 
