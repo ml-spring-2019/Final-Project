@@ -25,13 +25,8 @@ PHOTO_DIRECTORY = "cars_train/"
 PHOTO_ANNOS = "devkit/cars_train_annos.csv"
 OUT_FILENAME = "results.csv"
 CAR_CLASSES_FILE = "devkit/cars_meta.csv"
-<<<<<<< HEAD
-SCALE_WIDTH = 100
-SCALE_HEIGHT = 100
-=======
 SCALE_WIDTH = -1
 SCALE_HEIGHT = -1
->>>>>>> 96468d0aa20503f48db85e3670da4107adc89208
 NUM_CLASSES = 0
 EPOCH_SIZE = -1
 CLASSES = []
@@ -130,7 +125,6 @@ def file_IO(argv):
     print("Performing file I/O...\n\n")
     df = parse_annos_file(PHOTO_ANNOS, True)
     df["class"] = update_y(df["class"])
-    pdb.set_trace()
     x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
     # need to read the img files

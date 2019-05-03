@@ -1,1 +1,2 @@
 epoch_size, scale_width, scale_height, train_rate, loss, accuracy, io_time, arch_time, fit_time, eval_time
+10, 100, 100, 0.8, 4.390086316125681, 0.17372621245513012, 63.73705697059631, 0.07350516319274902, 915.6346576213837, 7.4601380825042725
