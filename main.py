@@ -8,6 +8,7 @@ import scipy.io
 import numpy as np
 import pandas as pd
 import theano
+import time
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
@@ -22,24 +23,61 @@ warnings.warn = warn
 
 PHOTO_DIRECTORY = "cars_train/"
 PHOTO_ANNOS = "devkit/cars_train_annos.csv"
+OUT_FILENAME = "results.csv"
 CAR_CLASSES_FILE = "devkit/cars_meta.csv"
-SCALE_WIDTH = 400
-SCALE_HEIGHT = 400
+SCALE_WIDTH = -1
+SCALE_HEIGHT = -1
 NUM_CLASSES = 0
-EPOCH_SIZE = 10
+EPOCH_SIZE = -1
 CLASSES = []
 
 def main(argv, argc):
-    if argc != 2:
-        print("Usage: python main.py <train rate>")
+    if argc != 4:
+        print("Usage: python main.py <train-rate> <img-scaling> <epoch-size>")
         exit(1)
 
+    io_time_begin = time.time()
     x_train, y_train, x_test, y_test = file_IO(argv)
-    model = define_model_architecture(x_train, y_train, x_test, y_test)
-    model = compile_fit_model(model, x_train, y_train)
-    evaluate_model(model, x_test, y_test)
+    io_time_end = time.time()
 
-    pdb.set_trace()
+    arch_time_begin = time.time()
+    model = define_model_architecture(x_train, y_train, x_test, y_test)
+    arch_time_end = time.time()
+
+    fit_time_begin = time.time()
+    model = compile_fit_model(model, x_train, y_train)
+    fit_time_end = time.time()
+
+    eval_time_begin = time.time()
+    loss, accuracy = evaluate_model(model, x_test, y_test)
+    eval_time_end = time.time()
+
+    # io time in seconds
+    io_time = io_time_end - io_time_begin
+
+    # arch time in seconds
+    arch_time = arch_time_end - arch_time_begin
+
+    # fit time in seconds
+    fit_time = fit_time_end - fit_time_begin
+
+    # evaluation time in seconds
+    evaluation_time = eval_time_end - eval_time_begin
+
+    strToWrite = str(EPOCH_SIZE)        + ", " + \
+                 str(SCALE_WIDTH)       + ", " + \
+                 str(SCALE_HEIGHT)      + ", " + \
+                 argv[1]                + ", " + \
+                 str(loss)              + ", " + \
+                 str(accuracy)          + ", " + \
+                 str(io_time)           + ", " + \
+                 str(arch_time)         + ", " + \
+                 str(fit_time)          + ", " + \
+                 str(evaluation_time)   + "\n"
+
+    file = open(OUT_FILENAME, "a")
+    file.write(strToWrite)
+    file.close()
 
     return 0
 
@@ -57,10 +95,7 @@ def define_model_architecture(x_train, y_train, x_test, y_test):
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
 
-    pdb.set_trace()
-
     model.add(Dense(NUM_CLASSES, activation='softmax'))
-
     return model
 
 # ------------------------------------------------------------------------------
@@ -70,24 +105,25 @@ def compile_fit_model(model, x_train, y_train):
     global EPOCH_SIZE
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
     model.fit(x_train, y_train, batch_size=32, nb_epoch=EPOCH_SIZE, verbose=1)
-    pdb.set_trace()
 
     return model
 
 def evaluate_model(model, x_test, y_test):
-    score, accuracy = model.evaluate(x_test, y_test, verbose=0)
-    print("score: " + str(score))
-    print("accuracy: " + str(accuracy))
+    loss, accuracy = model.evaluate(x_test, y_test, verbose=0)
+    return loss, accuracy
+
 
 # ------------------------------------------------------------------------------
 # read files
 def file_IO(argv):
-    global PHOTO_ANNOS
+    global PHOTO_ANNOS, SCALE_WIDTH, SCALE_HEIGHT, EPOCH_SIZE
     find_classes()
     train_rate = float(argv[1])
+    SCALE_WIDTH = int(argv[2])
+    SCALE_HEIGHT = int(argv[2])
+    EPOCH_SIZE = int(argv[3])
     print("Performing file I/O...\n\n")
     df = parse_annos_file(PHOTO_ANNOS, True)
-    pdb.set_trace()
     df["class"] = update_y(df["class"])
     x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
@@ -145,8 +181,6 @@ def preprocess_data(df, train_rate):
         crop_img = img[min_y:max_y, min_x:max_x]
         crop_img = rescale(crop_img, SCALE_WIDTH, SCALE_HEIGHT)
         features.append(crop_img)
-
-    # pdb.set_trace()
 
     features = np.asarray(features)
     num_train = int(df.shape[0]*train_rate)
