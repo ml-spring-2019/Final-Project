@@ -1,0 +1,1 @@
+epoch_size, scale_width, scale_height, train_rate, loss, accuracy, io_time, arch_time, fit_time, eval_time
