@@ -20,9 +20,14 @@ def warn(*args, **kwargs):
 import warnings
 warnings.warn = warn
 
+PHOTO_DIRECTORY = "cars_train/"
+PHOTO_ANNOS = "devkit/cars_train_annos.csv"
+CAR_CLASSES_FILE = "devkit/cars_meta.csv"
 SCALE_WIDTH = 400
 SCALE_HEIGHT = 400
-NUM_CLASSES = 196
+NUM_CLASSES = 0
+EPOCH_SIZE = 10
+CLASSES = []
 
 def main(argv, argc):
     if argc != 2:
@@ -31,10 +36,9 @@ def main(argv, argc):
 
     x_train, y_train, x_test, y_test = file_IO(argv)
     model = define_model_architecture(x_train, y_train, x_test, y_test)
-    model = compile_fit_model(model, x_train, y_train, x_test, y_test)
+    model = compile_fit_model(model, x_train, y_train)
     evaluate_model(model, x_test, y_test)
-    # Reshape input data
-    print(x_train.shape)
+
     pdb.set_trace()
 
     return 0
@@ -49,30 +53,25 @@ def define_model_architecture(x_train, y_train, x_test, y_test):
     model.add(MaxPooling2D(pool_size = (2,2)))
     model.add(Dropout(0.25))
 
-    pdb.set_trace()
-
     model.add(Flatten())
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(NUM_CLASSES, activation='softmax'))
 
     pdb.set_trace()
+
+    model.add(Dense(NUM_CLASSES, activation='softmax'))
+
     return model
 
 # ------------------------------------------------------------------------------
 # Compile and fit the model
 # nb_epoch ~ number of times gone through the training set
 def compile_fit_model(model, x_train, y_train):
+    global EPOCH_SIZE
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
-    model.fit(x_train, y_train, batch_size=32, nb_epoch=100, verbose=1)
+    model.fit(x_train, y_train, batch_size=32, nb_epoch=EPOCH_SIZE, verbose=1)
     pdb.set_trace()
 
-    # this is our score after running model.fit
-    #hm, forgot what that means | me too... LOOL
-    # i'll try running with the sample code given, had to fix a few errors, runnning now
-    # the accuracy is 10%. Running with nb_epoch = 100  | ah ok, oh i see it says on the side when it's calculating
-    # Here's what i got for the sample one from the site: [0.02759441680457744, 0.9923]
-    # it seems like the right number is the
     return model
 
 def evaluate_model(model, x_test, y_test):
@@ -83,13 +82,47 @@ def evaluate_model(model, x_test, y_test):
 # ------------------------------------------------------------------------------
 # read files
 def file_IO(argv):
+    global PHOTO_ANNOS
+    find_classes()
     train_rate = float(argv[1])
     print("Performing file I/O...\n\n")
-    df = parse_annos_file("devkit/mock_cars_train_annos.csv", True)
+    df = parse_annos_file(PHOTO_ANNOS, True)
+    pdb.set_trace()
+    df["class"] = update_y(df["class"])
     x_train, y_train, x_test, y_test = preprocess_data(df, train_rate)
 
     # need to read the img files
     return x_train, y_train, x_test, y_test
+
+# ------------------------------------------------------------------------------
+# Find the indices of unique car brands
+def find_classes():
+    global CAR_CLASSES_FILE, CLASSES, NUM_CLASSES
+
+    with open(CAR_CLASSES_FILE) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        temp = ""
+        itr, flag = 0, 0
+        for row in readCSV:
+            if flag == 1:
+                cur_brand = row[1].split()[0]
+                if cur_brand != temp:
+                    CLASSES.append(itr)
+                    temp = cur_brand
+                itr += 1
+            else:
+                flag = 1
+    NUM_CLASSES = len(CLASSES)
+
+def update_y(class_column):
+    global CLASSES
+    class_itr = 0
+    for i in range(class_column.shape[0]):
+        for j in range(len(CLASSES)):
+            if int(class_column[i]) <= CLASSES[j]:
+                class_column[i] = str(j - 1)
+                break
+    return class_column
 
 # ------------------------------------------------------------------------------
 # rescale cropped images
@@ -100,23 +133,20 @@ def rescale(img, width, height):
 # ------------------------------------------------------------------------------
 # preprocess input and output data
 def preprocess_data(df, train_rate):
-    global SCALE_WIDTH, SCALE_HEIGHT, NUM_CLASSES
+    global SCALE_WIDTH, SCALE_HEIGHT, NUM_CLASSES, PHOTO_DIRECTORY
     features = []
     #    df = df.sample(frac=1)
     for index, row in df.iterrows():
         min_x, max_x = int(row["min_x"]), int(row['max_x'])
         min_y, max_y = int(row['min_y']), int(row['max_y'])
 
-        img = cv2.imread("mock_cars_train/" + row['file'])
+        img = cv2.imread(PHOTO_DIRECTORY + row['file'])
 
         crop_img = img[min_y:max_y, min_x:max_x]
         crop_img = rescale(crop_img, SCALE_WIDTH, SCALE_HEIGHT)
         features.append(crop_img)
 
-        # crop_img = rescale(crop_img, SCALE_WIDTH, SCALE_HEIGHT)
-        # cv2.imshow("scaled", crop_img)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+    # pdb.set_trace()
 
     features = np.asarray(features)
     num_train = int(df.shape[0]*train_rate)
@@ -126,14 +156,12 @@ def preprocess_data(df, train_rate):
     x_train = x_train.astype('float32')/255
     x_test = x_test.astype('float32')/255
 
-    # x_train = x_train.reshape(x_train.shape[0], SCALE_WIDTH, SCALE_HEIGHT, 3)
-    # x_test = x_test.reshape(x_test.shape[0], SCALE_WIDTH, SCALE_HEIGHT, 3)
     y_train = np_utils.to_categorical(y_train,NUM_CLASSES)
     y_test = np_utils.to_categorical(y_test,NUM_CLASSES)
 
     return x_train, y_train, x_test, y_test
 
-# ---------------------------------------------------------i'm just getting set up since i just woke up haha---------------------
+# ------------------------------------------------------------------------------
 # returns dataFrame of (train/test) data
 def parse_annos_file(cars_annos, train):
     mult_photos_info = []
