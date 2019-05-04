@@ -85,14 +85,14 @@ def main(argv, argc):
 def define_model_architecture(x_train, y_train, x_test, y_test):
     global NUM_CLASSES
     model = Sequential()
-    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape = (SCALE_WIDTH, SCALE_HEIGHT, 1)))
-    model.add(Convolution2D(32, (3, 3), activation = 'relu'))
+    model.add(Convolution2D(64, (3, 3), activation='relu', input_shape = (SCALE_WIDTH, SCALE_HEIGHT, 3)))
+    model.add(Convolution2D(64, (3, 3), activation = 'relu'))
     model.add(MaxPooling2D(pool_size = (2,2)))
     model.add(Dropout(0.25))
 
     model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.4))
 
     model.add(Dense(NUM_CLASSES, activation='softmax'))
     return model
@@ -103,7 +103,7 @@ def define_model_architecture(x_train, y_train, x_test, y_test):
 def compile_fit_model(model, x_train, y_train):
     global EPOCH_SIZE
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
-    model.fit(x_train, y_train, batch_size=32, nb_epoch=EPOCH_SIZE, verbose=1)
+    model.fit(x_train, y_train, batch_size=64, nb_epoch=EPOCH_SIZE, verbose=1)
 
     return model
 
