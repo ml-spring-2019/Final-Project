@@ -4,7 +4,7 @@ Car Classification - Neural Networks
 
 #### To run the program
 1. go into terminal
-2. enter: python main.py <train-rate> <img-scaling> <epoch-size> or python main.py 0.8 100 10
+2. enter: python main.py (train-rate) (img-scaling) (epoch-size) or python main.py 0.8 100 10
   
 ### The resuts
 The results are going to be found in the results.csv file.
