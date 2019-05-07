@@ -4994,8 +4994,3 @@
 4992,"(array([[42]], dtype=uint8), array([[90]], dtype=uint8), array([[613]], dtype=uint16), array([[398]], dtype=uint16), array([[75]], dtype=uint8), array(['04993.jpg'], dtype='<U9'))"
 4993,"(array([[27]], dtype=uint8), array([[8]], dtype=uint8), array([[417]], dtype=uint16), array([[346]], dtype=uint16), array([[105]], dtype=uint8), array(['04994.jpg'], dtype='<U9'))"
 4994,"(array([[26]], dtype=uint8), array([[84]], dtype=uint8), array([[401]], dtype=uint16), array([[284]], dtype=uint16), array([[128]], dtype=uint8), array(['04995.jpg'], dtype='<U9'))"
-4995,"(array([[77]], dtype=uint8), array([[139]], dtype=uint8), array([[803]], dtype=uint16), array([[549]], dtype=uint16), array([[124]], dtype=uint8), array(['04996.jpg'], dtype='<U9'))"
-4996,"(array([[80]], dtype=uint8), array([[42]], dtype=uint8), array([[448]], dtype=uint16), array([[285]], dtype=uint16), array([[131]], dtype=uint8), array(['04997.jpg'], dtype='<U9'))"
-4997,"(array([[8]], dtype=uint8), array([[51]], dtype=uint8), array([[799]], dtype=uint16), array([[411]], dtype=uint16), array([[30]], dtype=uint8), array(['04998.jpg'], dtype='<U9'))"
-4998,"(array([[55]], dtype=uint8), array([[80]], dtype=uint8), array([[978]], dtype=uint16), array([[667]], dtype=uint16), array([[111]], dtype=uint8), array(['04999.jpg'], dtype='<U9'))"
-4999,"(array([[15]], dtype=uint8), array([[37]], dtype=uint8), array([[258]], dtype=uint16), array([[180]], dtype=uint8), array([[72]], dtype=uint8), array(['05000.jpg'], dtype='<U9'))"
